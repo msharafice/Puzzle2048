@@ -1,3 +1,4 @@
+*.dart linguist-language=Dart
 *.h linguist-detectable=false
 *.cc linguist-detectable=false
 *.cpp linguist-detectable=false
@@ -18,4 +19,3 @@
 *.xc* linguist-detectable=false
 Podfile linguist-detectable=false
 CMakeLists.txt linguist-detectable=false
-*.dart linguist-language=Dart
