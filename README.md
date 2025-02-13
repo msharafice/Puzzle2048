@@ -1,16 +1,11 @@
-# puzzle_2048
+# 2048 Game
 
-A new Flutter project.
+This project is a **2048** game implemented using the **Flutter** framework. 2048 is a popular puzzle game where the goal is to combine tiles with the same number to reach the 2048 tile.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **Simple and user-friendly graphics**
+- **Touch gestures** for gameplay
+- **Score tracking** and display of highest score
+- **Undo and Reset buttons** to control gameplay
+- **Colorful and attractive tiles** to display numbers
