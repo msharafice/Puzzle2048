@@ -1,5 +1,5 @@
-*.dart linguist-language=true
-*.h linguist-detectable=false
+# *.dart linguist-language=true
+*.h linguist-detectable=true
 *.cc linguist-detectable=false
 *.cpp linguist-detectable=false
 *.kt linguist-detectable=false
