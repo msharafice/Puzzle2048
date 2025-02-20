@@ -33,6 +33,8 @@ class _Puzzle2048State extends State<Puzzle2048> {
   List<int> scoreHistory = [];
 
   Offset _startSwipePosition = Offset.zero;
+  bool isGameOver = false;
+  bool isGameWon = false;
 
   @override
   void initState() {
@@ -132,7 +134,47 @@ class _Puzzle2048State extends State<Puzzle2048> {
         _addNewTile();
         score += 10;
       }
+
+      if (_has2048()) {
+        setState(() {
+          isGameWon = true;
+        });
+      }
+
+      if (!_isMovePossible()) {
+        setState(() {
+          isGameOver = true;
+        });
+      }
     });
+  }
+
+  bool _has2048() {
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        if (board[i][j] == 2048) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  bool _isMovePossible() {
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        if (board[i][j] == 0) {
+          return true;
+        }
+        if (i < 3 && board[i][j] == board[i + 1][j]) {
+          return true;
+        }
+        if (j < 3 && board[i][j] == board[i][j + 1]) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   List<int> _compressAndMerge(List<int> line) {
@@ -169,6 +211,8 @@ class _Puzzle2048State extends State<Puzzle2048> {
       score = 0;
       _addNewTile();
       _addNewTile();
+      isGameOver = false;
+      isGameWon = false;
     });
     history.clear();
     scoreHistory.clear();
@@ -212,115 +256,187 @@ class _Puzzle2048State extends State<Puzzle2048> {
   Widget _buildBoard() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(
-                  '2048',
-                  style: TextStyle(
-                    fontSize: 60,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.grey[800],
-                  ),
-                ),
-                Row(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 1.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    _buildScoreContainer("SCORE", score),
-                    SizedBox(width: 10),
-                    _buildScoreContainer("HIGH SCORE", highScore),
+                    Text(
+                      '2048',
+                      style: TextStyle(
+                        fontSize: 60,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.grey[800],
+                      ),
+                    ),
+                    Row(
+                      children: <Widget>[
+                        _buildScoreContainer("SCORE", score),
+                        SizedBox(width: 10),
+                        _buildScoreContainer("HIGH SCORE", highScore),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 30.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                _buildUndoContainer(),
-                SizedBox(width: 10),
-                _buildResetContainer(),
-              ],
-            ),
-          ),
-          // ثابت نگه داشتن کادر بازی
-          Container(
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Color(0xFF8C7B6C),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: GridView(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(), // جلوگیری از اسکرول
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 14.0,
-                mainAxisSpacing: 14.0,
               ),
-              children: List.generate(16, (index) {
-                int row = index ~/ 4;
-                int col = index % 4;
-                int value = board[row][col];
-
-                Color boxColor;
-                if (value == 0) {
-                  boxColor = Color(0xFFC8C0B3); // برای کادر خالی
-                  ;
-                } else if (value == 2) {
-                  boxColor = Color(0xFFF9F0D1);
-                } else if (value == 4) {
-                  boxColor = Color(0xFFF5E1A4);
-                } else if (value == 8) {
-                  boxColor = Color(0xFFFF8C2E);
-                } else if (value == 16) {
-                  boxColor = Color(0xFFFF7037);
-                } else if (value == 32) {
-                  boxColor = Color(0xFFF26B57);
-                } else if (value == 64) {
-                  boxColor = Color(0xFFEB4C2A);
-                } else if (value == 128) {
-                  boxColor = Color(0xFFF6D802);
-                } else {
-                  boxColor = Colors.grey[300]!;
-                }
-
-                return Container(
-                  alignment: Alignment.center,
-                  height: 65.0,
-                  width: 65.0,
-                  decoration: BoxDecoration(
-                    color: boxColor,
-                    borderRadius: BorderRadius.circular(8),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 30),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    _buildUndoContainer(),
+                    SizedBox(width: 20),
+                    _buildResetContainer(),
+                  ],
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isGameWon ? Color(0xFFFFE600) : Color(0xFFB79F72),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: GridView(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 14.0,
+                    mainAxisSpacing: 14.0,
                   ),
-                  child: value == 0
-                      ? null
-                      : Text(
-                          '$value',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: value > 4 ? Colors.white : Colors.black,
-                          ),
-                        ),
-                );
-              }),
-            ),
+                  children: List.generate(16, (index) {
+                    int row = index ~/ 4;
+                    int col = index % 4;
+                    int value = board[row][col];
+
+                    Color boxColor;
+                    if (value == 0) {
+                      boxColor = Color(0xFFC8C0B3);
+                    } else if (value == 2) {
+                      boxColor = Color(0xFFF9F0D1);
+                    } else if (value == 4) {
+                      boxColor = Color(0xFFF5E1A4);
+                    } else if (value == 8) {
+                      boxColor = Color(0xFFFF8C2E);
+                    } else if (value == 16) {
+                      boxColor = Color(0xFFFF7037);
+                    } else if (value == 32) {
+                      boxColor = Color(0xFFF26B57);
+                    } else if (value == 64) {
+                      boxColor = Color(0xFFEB4C2A);
+                    } else if (value == 128) {
+                      boxColor = Color(0xFFF6D802);
+                    } else {
+                      boxColor = Colors.grey[300]!;
+                    }
+
+                    return Container(
+                      alignment: Alignment.center,
+                      height: 65.0,
+                      width: 65.0,
+                      decoration: BoxDecoration(
+                        color: boxColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: value == 0
+                          ? null
+                          : Text(
+                              '$value',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: value > 4 ? Colors.white : Colors.black,
+                              ),
+                            ),
+                    );
+                  }),
+                ),
+              ),
+              // دکمه‌های جهت‌ها
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  _buildDirectionButton(Icons.arrow_upward, Direction.up),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  _buildDirectionButton(Icons.arrow_back, Direction.left),
+                  SizedBox(width: 10),
+                  _buildDirectionButton(Icons.arrow_forward, Direction.right),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  _buildDirectionButton(Icons.arrow_downward, Direction.down),
+                ],
+              ),
+            ],
           ),
+          if (isGameWon)
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  isGameWon = false;
+                  _reset();
+                });
+              },
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        'You Win!',
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'Tap to Continue',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDirectionButton(IconData icon, Direction direction) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Color(0xFF8C7B6C),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: IconButton(
+        icon: Icon(icon),
+        onPressed: () => _move(direction),
+        color: Colors.white,
       ),
     );
   }
@@ -351,7 +467,8 @@ class _Puzzle2048State extends State<Puzzle2048> {
 
   Widget _buildUndoContainer() {
     return Container(
-      width: 80,
+      width: 60,
+      height: 60,
       padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Color(0xFF8C7B6C),
@@ -366,10 +483,11 @@ class _Puzzle2048State extends State<Puzzle2048> {
 
   Widget _buildResetContainer() {
     return Container(
-      width: 80,
+      width: 60,
+      height: 60,
       padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Color(0xFF8C7B6C),
+        color: isGameOver ? Color(0xFFF7E1A4) : Color(0xFF8C7B6C),
         borderRadius: BorderRadius.circular(8),
       ),
       child: IconButton(
